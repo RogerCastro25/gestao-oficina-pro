@@ -111,6 +111,7 @@ const newUserForm = document.getElementById("newUserForm");
 const SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000;
 const SESSION_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 const AUTO_PRIORITY_REFRESH_MS = 30 * 1000;
+const STATIC_DEMO_MODE = isStaticDemoMode();
 const API_BASE_URL = resolveApiBaseUrl();
 
 let vehicles = [];
@@ -291,24 +292,41 @@ async function start() {
     localStorage.removeItem(STORAGE_KEYS.session);
   }
 
-  const setupStatus = await dataApi.getSetupStatus();
-  if (!setupStatus?.ok) {
+  if (STATIC_DEMO_MODE) {
     setupRequired = false;
-    startupConnectionIssue = setupStatus?.error || "Falha de conexão com a API.";
-  } else {
-    setupRequired = Boolean(setupStatus?.needsSetup);
     startupConnectionIssue = "";
-  }
-
-  if (session?.token && !setupRequired) {
-    const boot = await dataApi.bootstrap();
-    vehicles = boot.vehicles;
-    rules = { ...defaultRules, ...boot.rules };
-    history = boot.history;
+    if (!session?.nome || !session?.perfil) {
+      session = {
+        nome: "Modo Demo",
+        perfil: "admin",
+        at: new Date().toISOString(),
+        lastActivityAt: new Date().toISOString()
+      };
+      saveJson(STORAGE_KEYS.session, session);
+    }
+    vehicles = loadJson(STORAGE_KEYS.vehicles, []);
+    rules = { ...defaultRules, ...loadJson(STORAGE_KEYS.rules, {}) };
+    history = loadJson(STORAGE_KEYS.history, []);
   } else {
-    vehicles = [];
-    rules = { ...defaultRules };
-    history = [];
+    const setupStatus = await dataApi.getSetupStatus();
+    if (!setupStatus?.ok) {
+      setupRequired = false;
+      startupConnectionIssue = setupStatus?.error || "Falha de conexão com a API.";
+    } else {
+      setupRequired = Boolean(setupStatus?.needsSetup);
+      startupConnectionIssue = "";
+    }
+
+    if (session?.token && !setupRequired) {
+      const boot = await dataApi.bootstrap();
+      vehicles = boot.vehicles;
+      rules = { ...defaultRules, ...boot.rules };
+      history = boot.history;
+    } else {
+      vehicles = [];
+      rules = { ...defaultRules };
+      history = [];
+    }
   }
 
   hydrateRules();
@@ -321,6 +339,10 @@ async function start() {
   setDefaultEntryDate();
   setLoadingState(false);
   render();
+
+  if (STATIC_DEMO_MODE) {
+    notify("Modo demo ativo no GitHub Pages (sem backend). Dados salvos no navegador.", "info");
+  }
 }
 
 function bindEvents() {
@@ -2007,6 +2029,10 @@ async function tryRefreshSession() {
 }
 
 function resolveApiBaseUrl() {
+  if (STATIC_DEMO_MODE) {
+    return "";
+  }
+
   if (window.location.protocol === "file:") {
     return "http://localhost:3000";
   }
@@ -2021,6 +2047,11 @@ function resolveApiBaseUrl() {
   }
 
   return "";
+}
+
+function isStaticDemoMode() {
+  const host = String(window.location.hostname || "").toLowerCase();
+  return host.endsWith("github.io");
 }
 
 function toApiUrl(path) {
