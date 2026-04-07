@@ -1,0 +1,372 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oficina Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=7" />
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <section class="login-overlay" id="loginOverlay">
+    <article class="login-card">
+      <div class="login-logo">&#x1F527;</div>
+      <h2>Oficina Pro</h2>
+
+      <form id="loginForm" class="login-form">
+        <label>Usu&#225;rio<input name="usuario" required placeholder="seu.usuario" autocomplete="username" /></label>
+        <label>Senha<input name="senha" type="password" required placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password" /></label>
+        <button class="btn btn-accent full" type="submit">Entrar</button>
+        <p class="hint" id="loginHint">Acesso restrito a usu&#225;rios cadastrados.</p>
+      </form>
+
+      <form id="setupAdminForm" class="login-form hidden">
+        <p class="setup-title">Primeiro acesso &#8212; crie seu administrador</p>
+        <label>Usu&#225;rio<input name="username" required minlength="3" placeholder="admin" /></label>
+        <label>Nome completo<input name="fullName" required placeholder="Ex: Jo&#227;o Silva" /></label>
+        <label>
+          Senha
+          <input name="password" type="password" required minlength="8" placeholder="M&#237;n. 8 caracteres" />
+          <span class="field-hint">Use mai&#250;scula, min&#250;scula, n&#250;mero e s&#237;mbolo &#8212; ex: Oficina@1</span>
+        </label>
+        <button class="btn btn-accent full" type="submit">Criar administrador e entrar</button>
+      </form>
+    </article>
+  </section>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">&#x1F527; <span>Oficina Pro</span></div>
+    <div class="topbar-kpis" id="topbarKpis"></div>
+    <div class="topbar-actions">
+      <button id="btnAddVehicle" class="btn btn-accent">+ Novo Servi&#231;o</button>
+      <button id="btnRulesView" class="btn btn-ghost hidden">Ajustes</button>
+      <button id="btnExport" class="btn btn-ghost" title="Baixar planilha Excel com todos os ve&#237;culos ordenados por prioridade">&#8595; Planilha</button>
+      <label class="btn btn-ghost" for="csvInput" title="Importar planilha">&#8593; Importar</label>
+      <input id="csvInput" type="file" accept=".csv" hidden />
+      <div class="user-pill" id="userBadge">&#8212;</div>
+      <button id="btnLogout" class="btn btn-ghost-danger">Sair</button>
+    </div>
+  </header>
+
+  <!-- CORPO PRINCIPAL -->
+  <main class="main-body">
+
+    <nav class="tab-nav">
+      <button class="tab active" data-tab="patio">&#x1F697; P&#225;tio</button>
+      <button class="tab" data-tab="kanban">&#x1F3AF; Kanban</button>
+      <button class="tab" data-tab="usuarios" id="usersTabBtn">&#x1F465; Usu&#225;rios</button>
+    </nav>
+
+    <!-- ABA: PATIO -->
+    <div class="view active" data-view="patio">
+      <div class="patio-toolbar">
+        <div class="patio-filters">
+          <select id="filtroCliente">
+            <option value="Todos">Todos os clientes</option>
+            <option value="Locadora">Locadora</option>
+            <option value="Seguradora">Seguradora</option>
+            <option value="Particular">Particular</option>
+          </select>
+          <select id="filtroRecomendacao">
+            <option value="Todos">Todas as recomenda&#231;&#245;es</option>
+            <option value="Alta prioridade">&#x1F534; Alta prioridade</option>
+            <option value="Execucao rapida">&#x1F7E2; Execu&#231;&#227;o r&#225;pida</option>
+            <option value="Vale a pena">&#x1F7E1; Vale a pena</option>
+            <option value="N&#227;o vale a pena">&#x26AA; N&#227;o vale</option>
+          </select>
+          <select id="filtroViabilidade">
+            <option value="Todos">Todas as viabilidades</option>
+            <option value="Viavel">✅ Viável</option>
+            <option value="AbaixoMinimo">🔻 Abaixo do mínimo</option>
+          </select>
+          <select id="filtroStatus">
+            <option value="Todos">Todos os status</option>
+            <option value="Aguardando">&#x23F3; Aguardando</option>
+            <option value="Em andamento">&#x1F527; Em andamento</option>
+            <option value="Aguardando pecas">&#x1F4E6; Aguardando pe&#231;as</option>
+            <option value="Finalizacao">&#x2705; Finaliza&#231;&#227;o</option>
+          </select>
+        </div>
+        <span class="patio-info" id="patioInfo"></span>
+      </div>
+
+      <section class="ops-strip" id="opsStrip">
+        <article class="ops-card ops-now">
+          <span class="ops-label">Fazer agora</span>
+          <strong class="ops-value" id="opsNowCount">0</strong>
+          <p class="ops-copy" id="opsNowText">Sem pendências críticas.</p>
+        </article>
+        <article class="ops-card ops-watch">
+          <span class="ops-label">Acompanhar</span>
+          <strong class="ops-value" id="opsWatchCount">0</strong>
+          <p class="ops-copy" id="opsWatchText">Nada exigindo monitoramento.</p>
+        </article>
+        <article class="ops-card ops-stop">
+          <span class="ops-label">Sem retorno</span>
+          <strong class="ops-value" id="opsStopCount">0</strong>
+          <p class="ops-copy" id="opsStopText">Nenhum serviço ruim no momento.</p>
+        </article>
+      </section>
+
+      <div class="table-wrap">
+        <table id="vehicleTable">
+          <thead>
+            <tr>
+              <th class="col-prio">Ordem</th>
+              <th>Ve&#237;culo</th>
+              <th>Cliente</th>
+              <th>Data de entrada</th>
+              <th>Servi&#231;os</th>
+              <th>Dias no p&#225;tio</th>
+              <th>Valor cobrado</th>
+              <th>Lucro Est.</th>
+              <th>Recomenda&#231;&#227;o</th>
+              <th>Status</th>
+              <th class="col-actions">A&#231;&#245;es</th>
+            </tr>
+          </thead>
+          <tbody id="vehicleTableBody"></tbody>
+        </table>
+        <p class="empty-state hidden" id="emptyState">
+          Nenhum ve&#237;culo no p&#225;tio ainda. Clique em <strong>+ Novo Servi&#231;o</strong> para cadastrar o primeiro.
+        </p>
+      </div>
+
+      <section class="activity-strip">
+        <div class="section-head">
+          <h3>Movimenta&#231;&#245;es recentes</h3>
+          <p>As &#250;ltimas atualiza&#231;&#245;es do p&#225;tio aparecem aqui.</p>
+        </div>
+        <div id="recentHistoryList" class="recent-history-list"></div>
+      </section>
+    </div>
+
+    <!-- ABA: KANBAN -->
+    <div class="view hidden" data-view="kanban">
+      <div id="kanbanBoard" class="kanban-board"></div>
+    </div>
+
+    <!-- ABA: HISTORICO -->
+    <div class="view hidden" data-view="historico">
+      <div id="historyList" class="history-list"></div>
+    </div>
+
+    <!-- ABA: REGRAS -->
+    <div class="view hidden" data-view="regras">
+      <div class="rules-page">
+        <div class="rules-header">
+          <h3>&#x2699;&#xFE0F; Regras de Prioriza&#231;&#227;o Autom&#225;tica</h3>
+          <p>Esses valores controlam como o sistema calcula a ordem e recomenda&#231;&#227;o de cada ve&#237;culo na planilha.</p>
+        </div>
+        <form id="rulesForm" class="rules-grid">
+          <div class="rule-item"><label>Peso dos dias no p&#225;tio<input type="number" step="0.1" name="pesoDias" /></label><small>Quanto cada dia adiciona na prioridade</small></div>
+          <div class="rule-item"><label>Peso da urg&#234;ncia<input type="number" step="0.1" name="pesoUrgencia" /></label><small>Multiplicador do campo urg&#234;ncia (1&#8211;5)</small></div>
+          <div class="rule-item"><label>B&#244;nus servi&#231;o r&#225;pido<input type="number" step="0.1" name="bonusRapido" /></label><small>Pontos extras se conclu&#237;do r&#225;pido</small></div>
+          <div class="rule-item"><label>Penalidade aguardando pe&#231;as<input type="number" step="0.1" name="penalidadePecas" /></label><small>Desconto se est&#225; aguardando pe&#231;as</small></div>
+          <div class="rule-item"><label>Margem m&#237;nima sobre custo (%)<input type="number" step="1" min="0" name="margemMinimaSobreCusto" /></label><small>Exemplo: 50 = precisa lucrar 50% sobre o custo total</small></div>
+          <div class="rule-item"><label>Custo base por hora t&#233;cnica (R$)<input type="number" step="0.1" min="0" name="custoHoraTecnicaBase" /></label><small>Custo operacional por hora de servi&#231;o</small></div>
+          <div class="rule-item"><label>Custo base por dia no p&#225;tio (R$)<input type="number" step="0.1" min="0" name="custoDiaPatioBase" /></label><small>Custo de ocupa&#231;&#227;o do p&#225;tio por dia</small></div>
+          <div class="rule-item"><label>Limite horas "servi&#231;o r&#225;pido"<input type="number" step="0.5" name="limiteRapidoHoras" /></label><small>Abaixo disso = servi&#231;o r&#225;pido</small></div>
+          <div class="rule-item"><label>Rent. m&#237;nima r&#225;pido (R$/h)<input type="number" step="0.1" name="rentabRapida" /></label><small>M&#237;n. para ser "execu&#231;&#227;o r&#225;pida"</small></div>
+          <div class="rule-item"><label>Dias para "alta prioridade"<input type="number" step="1" name="diasAlta" /></label><small>Dias que elevam para alta prioridade</small></div>
+          <div class="rule-item"><label>Horas para "n&#227;o vale"<input type="number" step="0.5" name="horasNaoVale" /></label><small>Acima disso pode ser n&#227;o vale a pena</small></div>
+          <div class="rule-item"><label>Rent. m&#237;nima para "valer" (R$/h)<input type="number" step="0.1" name="rentabNaoVale" /></label><small>Abaixo disso &#233; n&#227;o vale a pena</small></div>
+          <div class="rule-item full-width"><button class="btn btn-accent" type="submit">&#x1F4BE; Salvar Regras</button></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ABA: USUARIOS -->
+    <div class="view hidden" data-view="usuarios">
+      <div class="users-page">
+        <div class="users-form-col">
+          <h3>&#x1F464; Novo Usu&#225;rio</h3>
+          <form id="newUserForm" class="user-form">
+            <label>Usu&#225;rio<input name="username" required minlength="3" placeholder="nome.usuario" /></label>
+            <label>Nome completo<input name="fullName" required placeholder="Nome completo" /></label>
+            <label>Perfil
+              <select name="role" required>
+                <option value="atendente">Atendente &#8212; cadastra e atualiza</option>
+                <option value="financeiro">Financeiro &#8212; somente leitura</option>
+                <option value="admin">Administrador &#8212; acesso total</option>
+              </select>
+            </label>
+            <label>Senha inicial
+              <input name="password" type="password" required minlength="8" placeholder="M&#237;n. 8 caracteres" />
+              <span class="field-hint">Mai&#250;scula, min&#250;scula, n&#250;mero e s&#237;mbolo</span>
+            </label>
+            <button class="btn btn-accent" type="submit">Criar usu&#225;rio</button>
+          </form>
+        </div>
+        <div class="users-list-col">
+          <h3>&#x1F465; Usu&#225;rios Cadastrados</h3>
+          <div id="usersList" class="users-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- PAINEL LATERAL: CADASTRO / EDICAO -->
+  <div class="panel-overlay hidden" id="panelOverlay"></div>
+  <aside class="side-panel hidden" id="sidePanel">
+    <div class="panel-header">
+      <h3 id="panelTitle">Novo Servi&#231;o</h3>
+      <button class="panel-close" id="panelClose">&#x2715;</button>
+    </div>
+
+    <form id="vehicleForm" class="panel-form" novalidate>
+      <div class="form-group">
+        <span class="group-label">&#x1F697; Ve&#237;culo</span>
+        <div class="grid-3">
+          <label>Marca *<input name="marca" required placeholder="Ford" /></label>
+          <label>Modelo *<input name="modelo" required placeholder="Fiesta" /></label>
+          <label>Cor *<input name="cor" required placeholder="Branco" /></label>
+        </div>
+        <div class="grid-2">
+          <label>Placa *<input name="placa" required maxlength="8" placeholder="ABC-1234" style="text-transform:uppercase" /></label>
+          <label>Quilometragem<input name="quilometragem" type="number" min="0" placeholder="120000" /></label>
+        </div>
+        <label>Estado f&#237;sico
+          <select name="estadoFisico">
+            <option value="Bom">&#x2705; Bom</option>
+            <option value="Regular">&#x26A0;&#xFE0F; Regular</option>
+            <option value="Critico">&#x1F6A8; Cr&#237;tico</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <span class="group-label">&#x1F464; Cliente</span>
+        <div class="grid-2">
+          <label>Tipo *
+            <select name="clienteTipo" required>
+              <option value="">Selecione</option>
+              <option value="Particular">Particular</option>
+              <option value="Seguradora">Seguradora</option>
+              <option value="Locadora">Locadora</option>
+            </select>
+          </label>
+          <label>Nome *<input name="clienteNome" required placeholder="Jo&#227;o Silva" /></label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <span class="group-label">&#x1F527; Servi&#231;o</span>
+        <div class="grid-2">
+          <label>Data de Entrada *<input name="entrada" type="date" required /></label>
+          <label>Status *
+            <select name="status" required>
+              <option value="">Selecione</option>
+              <option value="Aguardando">&#x23F3; Aguardando</option>
+              <option value="Em andamento">&#x1F527; Em andamento</option>
+              <option value="Aguardando pecas">&#x1F4E6; Aguardando pe&#231;as</option>
+              <option value="Finalizacao">&#x2705; Em finaliza&#231;&#227;o</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Urg&#234;ncia (1&#8211;5) *<input name="urgencia" type="number" min="1" max="5" placeholder="3" required /><span class="field-hint">1=baixa &middot; 5=cr&#237;tica</span></label>
+          <label>Horas estimadas *<input name="horas" type="number" min="0.5" step="0.5" placeholder="4" required /></label>
+        </div>
+        <label style="margin-bottom:6px">Tipos de servi&#231;o</label>
+        <div id="serviceChipsWrap" class="chips-wrap">
+          <label class="chip"><input type="checkbox" name="servico" value="Funilaria" />Funilaria</label>
+          <label class="chip"><input type="checkbox" name="servico" value="Pintura" />Pintura</label>
+          <label class="chip"><input type="checkbox" name="servico" value="Mecanica" />Mec&#226;nica</label>
+          <label class="chip"><input type="checkbox" name="servico" value="Suspensao" />Suspens&#227;o</label>
+          <label class="chip"><input type="checkbox" name="servico" value="Freio" />Freio</label>
+          <label class="chip"><input type="checkbox" name="servico" value="Motor" />Motor</label>
+          <label class="chip"><input type="checkbox" name="servico" value="Cambio" />C&#226;mbio</label>
+          <label class="chip"><input type="checkbox" name="servico" value="Eletrica" />El&#233;trica</label>
+          <label class="chip"><input type="checkbox" name="servico" value="Ar" />Ar-cond.</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <span class="group-label">&#x1F4B0; Valores</span>
+        <div class="grid-3">
+          <label>Pe&#231;as (R$) *<input name="pecas" type="number" min="0" step="0.01" placeholder="500" required /></label>
+          <label>M&#227;o de Obra (R$) *<input name="maoObra" type="number" min="0" step="0.01" placeholder="800" required /></label>
+          <label>Custo Interno (R$) *<input name="custoInterno" type="number" min="0" step="0.01" placeholder="300" required /></label>
+        </div>
+        <div class="grid-2">
+          <label>Valor a cobrar do cliente (R$) *
+            <input name="valorCobrado" type="number" min="0" step="0.01" placeholder="1800" required />
+            <span class="field-hint">Esse valor define se o serviço realmente vale a pena.</span>
+          </label>
+        </div>
+        <div class="lucro-preview" id="lucroPreview">Lucro estimado: &#8212;</div>
+      </div>
+
+      <div class="form-group">
+        <span class="group-label">&#x1F4CB; Vistoria</span>
+        <label>Observa&#231;&#245;es<textarea name="observacoes" rows="3" placeholder="Avarias, danos, pneus, lataria..."></textarea></label>
+        <label>Fotos
+          <input id="photoInput" name="fotos" type="file" accept="image/*" capture="environment" multiple />
+        </label>
+        <div id="photoPreview" class="photo-preview"></div>
+      </div>
+
+      <div class="panel-footer">
+        <button class="btn btn-ghost" id="cancelEditBtn" type="button">Cancelar</button>
+        <button class="btn btn-accent" id="submitVehicleBtn" type="submit">&#x1F4BE; Salvar</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- DETALHES / VISTORIA -->
+  <div class="panel-overlay hidden" id="detailPanelOverlay"></div>
+  <aside class="side-panel side-panel-lg hidden" id="detailOverlay">
+    <div class="panel-header">
+      <h3 id="detailTitle">Detalhes</h3>
+      <button class="panel-close" id="detailClose">&#x2715;</button>
+    </div>
+    <div id="detailMeta" class="detail-meta"></div>
+    <div id="detailGallery" class="detail-gallery"></div>
+    <div class="signature-box">
+      <p>Assinatura do respons&#225;vel</p>
+      <canvas id="signatureCanvas" width="520" height="140"></canvas>
+      <div class="signature-actions">
+        <button id="clearSignatureBtn" class="btn btn-ghost" type="button">Limpar</button>
+        <button id="printInspectionBtn" class="btn btn-accent" type="button">&#x1F4C4; Gerar vistoria</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TEMPLATE ROW -->
+  <template id="rowTemplate">
+    <tr>
+      <td class="prio"></td>
+      <td class="veiculo"></td>
+      <td class="cliente"></td>
+      <td class="entrada"></td>
+      <td class="servico"></td>
+      <td class="tempo"></td>
+      <td class="valorCobrado"></td>
+      <td class="lucro"></td>
+      <td class="recomendacao"></td>
+      <td class="status-cell">
+        <select class="status-select">
+          <option value="Aguardando">&#x23F3; Aguardando</option>
+          <option value="Em andamento">&#x1F527; Em andamento</option>
+          <option value="Aguardando pecas">&#x1F4E6; Ag. pe&#231;as</option>
+          <option value="Finalizacao">&#x2705; Finaliza&#231;&#227;o</option>
+        </select>
+      </td>
+      <td class="row-actions-cell">
+        <button class="btn-icon btn-detail" title="Detalhes">&#x1F50E;</button>
+        <button class="btn-icon btn-edit" title="Editar">&#x270F;&#xFE0F;</button>
+        <button class="btn-icon btn-delete" title="Excluir">&#x1F5D1;&#xFE0F;</button>
+      </td>
+    </tr>
+  </template>
+
+  <script src="app.js?v=8"></script>
+</body>
+</html>
