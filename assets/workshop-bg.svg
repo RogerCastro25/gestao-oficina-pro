@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#08131d"/>
+      <stop offset="0.45" stop-color="#102332"/>
+      <stop offset="1" stop-color="#0a1824"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(410 210) rotate(18) scale(700 380)">
+      <stop stop-color="#1fd6af" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#1fd6af" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1510 830) rotate(-14) scale(780 360)">
+      <stop stop-color="#2ca8ff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#2ca8ff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M60 0H0V60" stroke="white" stroke-opacity="0.06"/>
+    </pattern>
+    <filter id="blur40" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="40"/>
+    </filter>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#g1)"/>
+  <rect width="1920" height="1080" fill="url(#grid)"/>
+  <ellipse cx="410" cy="210" rx="700" ry="380" fill="url(#glowA)"/>
+  <ellipse cx="1510" cy="830" rx="780" ry="360" fill="url(#glowB)"/>
+
+  <g opacity="0.2" filter="url(#blur40)">
+    <path d="M-120 880C280 760 620 900 960 820C1300 740 1600 560 2040 660" stroke="#38e8bf" stroke-width="44"/>
+    <path d="M-80 500C260 420 620 520 960 460C1300 400 1680 220 2060 340" stroke="#45b8ff" stroke-width="34"/>
+  </g>
+
+  <g opacity="0.35">
+    <path d="M240 720H520L560 670H780L830 720H1110" stroke="#93d8ff" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="410" cy="722" r="42" stroke="#93d8ff" stroke-width="4"/>
+    <circle cx="920" cy="722" r="42" stroke="#93d8ff" stroke-width="4"/>
+  </g>
+
+  <g opacity="0.22" stroke="#7cf1cf" stroke-width="3" stroke-linecap="round">
+    <path d="M1490 240L1570 320"/>
+    <path d="M1570 240L1490 320"/>
+    <path d="M1530 210V350"/>
+    <path d="M1460 280H1600"/>
+  </g>
+</svg>
